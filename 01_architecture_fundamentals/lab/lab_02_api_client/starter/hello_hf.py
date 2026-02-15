@@ -22,16 +22,16 @@ def get_api_token():
             "HUGGINGFACE_API_TOKEN not found. "
             "Create a .env file with your token or set the environment variable."
         )
-    if not token.startswith("hf_"):
-        raise ValueError(
-            "Invalid Hugging Face token format. Token should start with 'hf_'."
-        )
+    ##if not token.startswith("hf_"):
+    #    raise ValueError(
+    #        "Invalid Hugging Face token format. Token should start with 'hf_'."
+    #   )
     return token
 
 
 # --- Configuration ---
-API_URL = "https://api-inference.huggingface.co/models/"
-MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.3"
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.2:together"
 TOKEN = get_api_token()
 HEADERS = {"Authorization": f"Bearer {TOKEN}"}
 
@@ -49,13 +49,26 @@ HEADERS = {"Authorization": f"Bearer {TOKEN}"}
 #   - Call response.raise_for_status() to catch HTTP errors
 #   - Parse with response.json()
 #   - The generated text is at result[0]["generated_text"]
+
+
+
 # =====================================================================
 
-prompt = "Explain what a vector database is in one paragraph:"
-
 # Your code here:
-# response = requests.post(...)
-# response.raise_for_status()
-# result = response.json()
-# print("Generated Text:")
-# print(result[0]["generated_text"])
+url = f"{API_URL}/{MODEL_ID}"
+headers=HEADERS
+
+prompt = "Explain what a vector database is in one paragraph:"
+payload = {
+    "inputs": prompt,
+    "parameters": {
+        "max_new_tokens": 150,
+        "temperature": 0.7,
+        "return_full_text": False
+    }
+}
+response = requests.post(url, headers=headers, json=payload)
+response.raise_for_status()
+result = response.json()
+print("Generated Text:")
+print(result[0]["generated_text"]) 

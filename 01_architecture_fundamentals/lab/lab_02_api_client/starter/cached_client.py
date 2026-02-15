@@ -51,7 +51,11 @@ class CachedHFClient(HuggingFaceClient):
         # =================================================================
 
         # Your code here (cache check)
-
+        if use_cache and cache_file.exists():
+            print("[Cache HIT] Using cached response")
+            cashed_text = cache_file.read_text(encoding="utf-8")
+            return json.load(cashed_text)
+            
         # =================================================================
         # TODO 2: Make the API call (cache miss)
         #
@@ -61,7 +65,8 @@ class CachedHFClient(HuggingFaceClient):
         # =================================================================
 
         # Your code here (API call)
-        result = None  # Replace with: super().query(model_id, payload)
+        print("[Cache MISS] Calling API...")
+        result = super().query(model_id, payload)  # Replace with: super().query(model_id, payload)
 
         # =================================================================
         # TODO 3: Write result to cache
@@ -71,7 +76,8 @@ class CachedHFClient(HuggingFaceClient):
         # =================================================================
 
         # Your code here (cache write)
-
+        json_text =json.dumps(result, ensure_ascii=False)
+        cache_file.write_text(json_text, encoding="utf-8")
         return result
 
 

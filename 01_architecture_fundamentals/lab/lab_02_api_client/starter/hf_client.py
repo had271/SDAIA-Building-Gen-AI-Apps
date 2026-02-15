@@ -71,6 +71,15 @@ class HuggingFaceClient:
                 # =============================================================
 
                 # Your code here (503 handling)
+                if response.status_code == 503:
+                    try:
+                        estimated_time = response.json().get("estimated_time", 30)
+                    except Exception:
+                        estimated_time = 30
+                    wait_time = min(estimated_time, 60)
+                    print(f"Model loading... waiting {wait_time}s (attempt {attempt})")
+                    time.sleep(wait_time)
+                    continue
 
                 # =============================================================
                 # TODO 2: Handle 429 — Rate limited
@@ -84,6 +93,11 @@ class HuggingFaceClient:
                 # =============================================================
 
                 # Your code here (429 handling)
+                if response.status_code == 429:
+                    wait_time = self.retry_delay * (2 ** attempt)
+                    print(f"Rate limited. Waiting {wait_time}s before retry...")
+                    time.sleep(wait_time)
+                    continue
 
                 # Other errors — raise immediately
                 response.raise_for_status()
@@ -99,6 +113,11 @@ class HuggingFaceClient:
                 # =============================================================
 
                 # Your code here (timeout handling)
+                print(f"Request timed out ({attempt} {attempt + 1}/{self.max_retries})")
+                
+                if attempt < self.max_retries - 1:
+                    time.sleep(self.retry_delay)
+                    continue
                 raise  # Remove this line once you implement the handler
 
         raise RuntimeError(
