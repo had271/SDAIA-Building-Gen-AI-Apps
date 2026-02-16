@@ -14,7 +14,8 @@ from typing import List, Dict, Any
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from calculator import get_tool_schemas, execute_tool
+from pydantic import ValidationError
+from calculator import get_tool_schemas, execute_tool, CalculationRequest
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -66,33 +67,40 @@ def get_ai_response_with_tools(
     if response_message.tool_calls:
         logger.info(f"Model initiated {len(response_message.tool_calls)} tool call(s).")
 
-        # TODO: Append the assistant's message (with tool_calls) to messages
-        # Hint: messages.append({
-        #     "role": "assistant",
-        #     "content": response_message.content,
-        #     "tool_calls": response_message.tool_calls
-        # })
+        # Append the assistant's message (with tool_calls) to messages
+        messages.append(response_message)
 
-        # TODO: Loop through each tool_call and:
-        # 1. Extract tool_name from tool_call.function.name
-        # 2. Parse arguments with json.loads(tool_call.function.arguments)
-        #    (wrap in try/except for JSONDecodeError!)
-        # 3. Execute the tool: result = execute_tool(tool_name, arguments)
-        # 4. Append the tool result message to messages:
-        #    messages.append({
-        #        "role": "tool",
-        #        "tool_call_id": tool_call.id,
-        #        "content": json.dumps(result)
-        #    })
-        # 5. Collect results in tool_results list
+        for tool_call in response_message.tool_calls:
+            tool_name = tool_call.function.name
+            raw_arguments = tool_call.function.arguments
+            
+            try:
+                if tool_name == "execute_calculation":
+                    # Pydantic validation
+                    request = CalculationRequest.model_validate_json(raw_arguments)
+                    # Execute with validated arguments
+                    result = execute_tool(tool_name, request.model_dump())
+                else:
+                    result = {"success": False, "error": f"Unknown tool: {tool_name}"}
+            except ValidationError as e:
+                result = {"success": False, "error": f"Validation Error: {e}"}
+            except json.JSONDecodeError:
+                 result = {"success": False, "error": "Invalid JSON arguments"}
 
-        # TODO: Make the second API call with updated messages
-        # second_response = client.chat.completions.create(
-        #     model=model, messages=messages, temperature=0.1
-        # )
-        # response_text = second_response.choices[0].message.content
+            # Append tool result
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tool_call.id,
+                "content": json.dumps(result)
+            })
+            tool_results.append(result)
 
-        response_text = "Tool calling not yet implemented."  # Remove this line
+        # Second API call: send updated messages → get final answer
+        second_response = client.chat.completions.create(
+            model=model, messages=messages, temperature=0.1
+        )
+        response_text = second_response.choices[0].message.content
+
     else:
         # No tool calls — direct text response
         response_text = response_message.content
