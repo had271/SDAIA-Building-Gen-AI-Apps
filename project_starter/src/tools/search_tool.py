@@ -32,17 +32,22 @@ def validate_url(url: str) -> bool:
         # Simple check for private ranges (10.x.x.x, 192.168.x.x, 172.16.x.x, 127.x.x.x)
         # In a real prod env, use the `ipaddress` module for strict checking
         parts = ip_address.split('.')
-        if parts[0] == '10': return False
-        if parts[0] == '192' and parts[1] == '168': return False
-        if parts[0] == '172' and 16 <= int(parts[1]) <= 31: return False
-        if parts[0] == '127': return False
-        if ip_address == "0.0.0.0": return False
+        if parts[0] == '10': 
+            return False
+        if parts[0] == '192' and parts[1] == '168': 
+            return False
+        if parts[0] == '172' and 16 <= int(parts[1]) <= 31: 
+            return False
+        if parts[0] == '127': 
+            return False
+        if ip_address == "0.0.0.0": 
+            return False
 
         return True
     except Exception:
         return False
 
-# @registry.register("search_web", "Search the web for a query. Returns a list of results with title, link, and snippet.", category="research")
+@registry.register("search_web", "Search the web for a query. Returns a list of results with title, link, and snippet.", category="research")
 # NOTE: The decorator above will work once you implement the registry!
 def search_web(query: str, max_results: int = 5) -> list[dict]:
     """
@@ -83,7 +88,7 @@ def search_web(query: str, max_results: int = 5) -> list[dict]:
 
     return results
 
-# @registry.register("read_webpage", "Read the content of a webpage. Returns the text content.", category="research")
+@registry.register("read_webpage", "Read the content of a webpage. Returns the text content.", category="research")
 # NOTE: The decorator above will work once you implement the registry!
 def read_webpage(url: str) -> str:
     """Read and extract text from a URL."""

@@ -1,5 +1,6 @@
 import logging
 from dataclasses import dataclass, field
+import litellm
 # from litellm import completion_cost
 
 logger = logging.getLogger(__name__)
@@ -47,7 +48,21 @@ class CostTracker:
         # 2. Extract usage stats from response
         # 3. Calculate cost (use litellm.completion_cost or fallback)
         # 4. create StepCost and add to query
-        pass
+        if self._current_query is None:
+            return
+        usage = getattr(response, 'usage', None)
+        if usage is None:
+            return  
+        input_tokens = getattr(usage, 'prompt_tokens', 0)
+        output_tokens = getattr(usage, 'completion_tokens', 0) 
+        cost = litellm.completion_cost(input_tokens, output_tokens)
+        step_cost = StepCost(step_number=step_number,
+        model=getattr(response, "model", "unknown"),
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        cost_usd=cost,
+        is_tool_call=is_tool_call)
+        self._current_query.add_step_cost(step_cost)
 
     def end_query(self):
         if self._current_query:
@@ -56,5 +71,26 @@ class CostTracker:
 
     def print_cost_breakdown(self):
         # TODO: Print detailed cost breakdown
-        pass
+        if self._current_query is None:
+            print("No active query to display cost breakdown.")
+            return
+        if not self._current_query.step_costs:
+            print("No cost data available.")
+            return
+        total_cost = 0
+        total_input_tokens = 0
+        total_output_tokens = 0
+        for step_cost in self._current_query.step_costs:
+            step_type = "Tool Call" if step_cost.is_tool_call else "Completion"
+            print(f"\nStep {step_cost.step_number} ({step_type}):")
+            print(f"  Input Tokens:  {step_cost.input_tokens:,}")
+            print(f"  Output Tokens: {step_cost.output_tokens:,}")
+            print(f"  Cost:          ${step_cost.cost:.6f}")
 
+            total_cost += step_cost.cost
+            total_input_tokens += step_cost.input_tokens
+            total_output_tokens += step_cost.output_tokens
+        print("TOTAL:")
+        print(f"  Total Input Tokens:  {total_input_tokens:,}")
+        print(f"  Total Output Tokens: {total_output_tokens:,}")
+        print(f"  Total Cost:          ${total_cost:.6f}")

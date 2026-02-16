@@ -73,25 +73,37 @@ class ToolRegistry:
         # 2. Register it in self._tools dictionary
         # 3. Add to category in self._categories
         # 4. Return the original function (so it can still be called normally)
+
+    
         def decorator(func: Callable):
+            tool = Tool(name=name, description=description, func=func)
+            self._tools[name]=tool
+            if category not in self._categories:
+                self._categories[category] = []
+            self._categories[category].append(tool)
             return func
         return decorator
 
     def get_tool(self, name: str) -> Tool | None:
         # TODO: Return the tool by name
-        return None
+        return self._tools.get(name)
 
     def get_all_tools(self) -> list[Tool]:
         # TODO: Return all tools
-        return []
+        return list(self._tools.values())
+
 
     def get_tools_by_category(self, category: str) -> list[Tool]:
         # TODO: Return tools by category
-        return []
+        return self._categories.get(category, [])
+        
 
     def execute_tool(self, name: str) -> Callable:
         # TODO: Get tool and return its execute method
-        pass
+        tool = self.get_tool(name)
+        if tool is None:
+            raise ValueError(f"Tool '{name}' not found")
+        return tool.execute
 
 # Global registry instance
 registry = ToolRegistry()
