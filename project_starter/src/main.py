@@ -8,8 +8,10 @@ from src.agent.specialists import create_researcher, create_analyst, create_writ
 from src.observability.tracer import tracer # TODO: Unleash the tracer
 from src.observability.cost_tracker import CostTracker
 
+
 # Load environment variables
 load_dotenv()
+
 
 async def main():
     """
@@ -68,7 +70,10 @@ async def main():
 
         # Final output
         print(writing_result["answer"])
-        tracer.end_trace(success=True) 
+        tracer.end_trace(
+            trace_id=trace_id,
+            output=writing_result["answer"] if writing_result else "",
+            status="completed")
         cost_tracker.end_query()
         total_cost = (research_result.get("cost", 0.0) + 
                      analysis_result.get("cost", 0.0) + 
@@ -78,7 +83,7 @@ async def main():
         if cost_tracker is not None:
             cost_tracker.end_query()
             output = writing_result["answer"] if writing_result else ""
-            tracer.end_trace(trace_id=trace_id, output=output, status="completed")
+            tracer.end_trace(trace_id=trace_id, output=output, status="failed")
             print(f"Error: {str(e)}")
 
 if __name__ == "__main__":

@@ -6,3 +6,4 @@ requests
 structlog
 litellm
 tenacity
+openrouter

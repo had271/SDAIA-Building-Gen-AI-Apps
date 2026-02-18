@@ -4,13 +4,17 @@ import os
 #import time
 
 import structlog
-from litellm import acompletion#, completion_cost
+#from litellm import acompletion, completion_cost
 # from pydantic import ValidationError
 
 from src.observability.cost_tracker import CostTracker
 from src.observability.loop_detector import AdvancedLoopDetector
 from src.observability.tracer import AgentTracer # AgentStep, ToolCallRecord
 from src.tools.registry import registry
+
+import groq
+from src.config import Config
+client = groq(api_key=Config.OPENROUTER_API_KEY)
 
 logger = structlog.get_logger()
 
@@ -77,11 +81,19 @@ class ObservableAgent:
                 self.tracer.log_step(step, "calling_llm")
                 
                 # 3. Call LLM (using acompletion)
-                response = await acompletion(
-                    model=self.model,
+                #response = await acompletion(
+                #    model=self.model,
+                #    messages=self.messages,
+                #    tools=self._format_tools() if self.tools else None,
+                #)
+                tools_payload = [
+                    {"name": tool.name,"description": tool.description,"parameters": tool.parameters}
+                for tool in self.tools]
+
+                response = await client.chat.send(
+                    model=Config.MODEL_NAME,
                     messages=self.messages,
-                    tools=self._format_tools() if self.tools else None,
-                )
+                    tools=tools_payload if self.tools else None)
                 
                 # 4. Log completion and cost
                 self.cost_tracker.log_completion(step, response)
