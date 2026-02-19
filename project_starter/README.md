@@ -38,7 +38,6 @@ Multi-agent system built with a **ReAct loop**, full **observability**. The syst
 ├──RAG.py                        # PDF extraction, chunking, FAISS indexing & search
 ├──tests/
 ├── pyproject.toml
-├── .env.example
 ├── requirements.txt
 └── README.md
 ```
