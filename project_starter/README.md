@@ -69,15 +69,12 @@ uv sync
 
 ### 3. Configure environment variables
 
-```bash
-cp .env.example .env
-```
 
-Edit `.env` and fill in your keys:
+Create `.env` and fill in your keys:
 
 ```env
 OPENROUTER_API_KEY=your_openrouter_key_here 
-MODEL_NAME=gemini/gemini-2.5-flash-preview
+MODEL_NAME=openrouter/stepfun/step-3.5-flash:free
 ```
 
 ---
