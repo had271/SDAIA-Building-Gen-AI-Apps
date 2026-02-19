@@ -38,6 +38,20 @@ class CostTracker:
 
     def start_query(self, query: str):
         self._current_query = QueryCost(query=query)
+    
+    def add_cost(self, cost: float):
+        """Add cost manually (used by Agent)."""
+        if self._current_query:
+            self._current_query.total_cost_usd += cost
+        else:
+            self.start_query("unknown_query")
+            self._current_query.total_cost_usd += cost 
+            
+    def get_total_cost(self) -> float:
+        """Get current total cost (used by Agent)."""
+        if self._current_query:
+            return self._current_query.total_cost_usd
+        return 0.0         
 
     def log_completion(self, step_number: int, response, is_tool_call: bool = False):
         """

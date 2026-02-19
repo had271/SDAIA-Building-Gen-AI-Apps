@@ -1,7 +1,7 @@
 from src.agent.observable_agent import ObservableAgent
 from src.tools.registry import registry
 
-def create_researcher(model: str = "gpt-4o", max_steps: int = 15):
+def create_researcher(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps: int = 15):
     """
     The Researcher: finds, retrieves, and extracts information.
     
@@ -17,7 +17,6 @@ def create_researcher(model: str = "gpt-4o", max_steps: int = 15):
 
     Your standards:
     - Always cite your sources with URLs or document references.
-    - Retrieve from multiple sources to avoid single-source bias.
     - If search results are thin, reformulate your query before giving up.
     - Return raw findings organized by source. Do NOT editorialize."""
     research_tools = registry.get_tools_by_category("research")
@@ -31,7 +30,7 @@ def create_researcher(model: str = "gpt-4o", max_steps: int = 15):
     )
 
 
-def create_analyst(model: str = "gpt-4o", max_steps: int = 20):
+def create_analyst(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps: int = 20):
     """
     The Analyst: evaluates, cross-references, and identifies patterns.
     """
@@ -56,7 +55,7 @@ def create_analyst(model: str = "gpt-4o", max_steps: int = 20):
         tools=analysis_tools
     )
 
-def create_writer(model: str = "gpt-4o", max_steps: int = 4):
+def create_writer(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps: int = 4):
     """
     The Writer: synthesizes analysis into polished, readable output.
     """

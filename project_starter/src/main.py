@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 from src.agent.specialists import create_researcher, create_analyst, create_writer
 from src.observability.tracer import tracer # TODO: Unleash the tracer
 from src.observability.cost_tracker import CostTracker
-
+import litellm
+#litellm._turn_on_debug()
 
 # Load environment variables
 load_dotenv()

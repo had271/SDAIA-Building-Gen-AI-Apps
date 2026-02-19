@@ -1,4 +1,4 @@
-openai
+openrouter
 pydantic
 python-dotenv
 beautifulsoup4
@@ -6,4 +6,3 @@ requests
 structlog
 litellm
 tenacity
-openrouter
