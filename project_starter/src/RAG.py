@@ -1,5 +1,4 @@
 import fitz  # PyMuPDF
-
 from dataclasses import dataclass, field
 from typing import Optional, Dict
 from datetime import datetime, timezone
@@ -230,5 +229,3 @@ index = faiss.IndexFlatL2(dimension)
 index.add(embeddings)
 
 print("Total vectors in FAISS:", index.ntotal) #102
-
-

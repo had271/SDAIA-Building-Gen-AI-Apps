@@ -1,7 +1,11 @@
 from src.agent.observable_agent import ObservableAgent
 from src.tools.registry import registry
+from dotenv import load_dotenv
+import os
+load_dotenv()
+DEFAULT_MODEL = os.getenv("MODEL_NAME", "ollama/llama3.2")
 
-def create_researcher(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps: int = 15):
+def create_researcher(model: str = DEFAULT_MODEL, max_steps: int = 15):
     """
     The Researcher: finds, retrieves, and extracts information.
     
@@ -12,13 +16,12 @@ def create_researcher(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps
     # 1. Define system prompt (e.g. "You are a world-class researcher...")
     # 2. Get research tools from registry (e.g. registry.get_tools_by_category("research"))
     # 3. Create and return ObservableAgent with these tools and prompt
-    RESEARCHER_PROMPT = """You are a Research Specialist. Your ONLY job is
-    to find and retrieve relevant information. You do NOT analyze or write.
-
-    Your standards:
-    - Always cite your sources with URLs or document references.
-    - If search results are thin, reformulate your query before giving up.
-    - Return raw findings organized by source. Do NOT editorialize."""
+    RESEARCHER_PROMPT = """You are a researcher. Use the search_web tool to find information.
+    After getting the search results, summarize what you found in plain text.
+    - Call search_web once with the user's query.
+    - Read the results carefully.
+    - Write a plain text summary of the findings with sources.
+    - Do NOT return JSON. Write normal sentences."""
     research_tools = registry.get_tools_by_category("research")
     return ObservableAgent(
         model=model,
@@ -30,18 +33,16 @@ def create_researcher(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps
     )
 
 
-def create_analyst(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps: int = 20):
+def create_analyst(model: str = DEFAULT_MODEL, max_steps: int = 20):
     """
     The Analyst: evaluates, cross-references, and identifies patterns.
     """
     # TODO: Implement this factory
-    ANALYST_PROMPT = """You are an Analysis Specialist. Your ONLY job is to evaluate information and extract insights.
-    
-    Your standards:
-    - Cross-reference claims across sources. Flag contradictions explicitly.
-    - Distinguish between facts, opinions, and speculation.
-    - Identify gaps: what important questions does the research NOT answer?
-    - Rate confidence: High / Medium / Low per claim."""
+    ANALYST_PROMPT = """You are an analyst. Read the given information and extract key points.
+    - List the main facts.
+    - Note if anything is unclear or missing.
+    - Rate each fact: High / Medium / Low confidence.
+    - Be concise."""
 
     # Get analysis tools from registry
     analysis_tools = registry.get_tools_by_category("analysis")
@@ -55,18 +56,18 @@ def create_analyst(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps: i
         tools=analysis_tools
     )
 
-def create_writer(model: str = "openrouter/z-ai/glm-4.5-air:free", max_steps: int = 4):
+def create_writer(model: str = DEFAULT_MODEL, max_steps: int = 4):
     """
     The Writer: synthesizes analysis into polished, readable output.
     """
     # TODO: Implement this factory
-    WRITER_PROMPT= """You are a Writing Specialist. Your ONLY job is 
-    to take analyzed research and produce a clear, well-structured document.
-    Your standards:
-    - Write for the specified audience (default: informed professional).
-    - Structure with clear headings, topic sentences, and transitions.
-    - Preserve source citations from the research phase.
-    - Include confidence qualifiers from the analysis."""
+    WRITER_PROMPT= """You are a writer. Write a clear and direct answer to the user's question using the verified key points.
+    Keep the answer concise.
+
+    Rules:
+    - Write normal sentences, NOT JSON.
+    - Start directly with the content.
+    - Do not write a report."""
     writing_tools = registry.get_tools_by_category("Writing")
     return ObservableAgent(
         model=model,

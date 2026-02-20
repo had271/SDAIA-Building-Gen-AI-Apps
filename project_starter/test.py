@@ -1,20 +1,19 @@
-import requests
 import os
 from dotenv import load_dotenv
+import litellm
 
 load_dotenv()
 
-url = "https://openrouter.ai/api/v1/chat/completions"
+model = os.getenv("MODEL_NAME")
+api_key = os.getenv("OPENROUTER_API_KEY")
 
-headers = {
-    "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-    "Content-Type": "application/json"
-}
+print(f"Model: {model}")
+print(f"API Key: {api_key[:10]}...")
 
-data = {
-    "model": os.getenv("MODEL_NAME", "openrouter/openai/gpt-4o-mini"),
-    "messages": [{"role": "user", "content": "Hi"}]
-}
+response = litellm.completion(
+    model=model,
+    api_key=api_key,
+    messages=[{"role": "user", "content": "say hi"}]
+)
 
-response = requests.post(url, headers=headers, json=data)
-print(response.json())
+print(response.choices[0].message.content)

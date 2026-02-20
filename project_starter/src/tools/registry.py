@@ -98,12 +98,14 @@ class ToolRegistry:
         return self._categories.get(category, [])
         
 
-    def execute_tool(self, name: str) -> Callable:
+    def execute_tool(self, name: str, **kwargs) -> Any:
         # TODO: Get tool and return its execute method
         tool = self.get_tool(name)
         if tool is None:
             raise ValueError(f"Tool '{name}' not found")
-        return tool.execute
+        # Convert types based on pydantic model
+        validated = tool.model(**kwargs)
+        return tool.func(**validated.model_dump())
 
 # Global registry instance
 registry = ToolRegistry()
