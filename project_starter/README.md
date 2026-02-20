@@ -74,8 +74,8 @@ uv sync
 Create `.env` and fill in your keys:
 
 ```env
-OPENROUTER_API_KEY=your_openrouter_key_here 
-MODEL_NAME=openrouter/stepfun/step-3.5-flash:free
+MODEL_NAME=ollama/qwen2.5:3b
+OLLAMA_API_BASE=http://localhost:11434
 ```
 
 ---
@@ -126,7 +126,7 @@ PDF File
 | Component | Library |
 |---|---|
 | LLM calls | `litellm` |
-| Model | `openrouter/openai/gpt-oss-120b:free` |
+| Model | `ollama/qwen2.5:3b` |
 | Embeddings | `openai/text-embedding-3-small` (via OpenRouter) |
 | Vector DB | `faiss-cpu` |
 | PDF parsing | `PyMuPDF (fitz)` |
